@@ -3,6 +3,8 @@
 *.lo
 *.o
 *.obj
+*.mexa64
+*.pyc
 
 # Precompiled Headers
 *.gch
