@@ -1,4 +1,5 @@
 #include "mf.h"
+#include <iostream>
 #include "train.h"
 
 /**
@@ -285,7 +286,7 @@ TrainOption::~TrainOption()
  */
 GridMatrix::GridMatrix(Matrix *R, int *map_u, int *map_i, int nr_gubs, int nr_gibs, int nr_thrs) : nr_gubs(nr_gubs), nr_gibs(nr_gibs)
 {
-   printf("Griding...");
+   printf("Gridding...");
    fflush(stdout);
 
    Clock clock;
@@ -313,6 +314,7 @@ GridMatrix::GridMatrix(Matrix *R, int *map_u, int *map_i, int nr_gubs, int nr_gi
          GMS[mx * nr_gibs + nx] = new Matrix(r_map[mx][nx], -1, -1, 0);
 
    for (int mx = 0; mx < nr_gubs; mx++) for (int nx = 0; nx < nr_gibs; nx++) r_map[mx][nx] = 0; // Use r_map as index counter.
+
 
    for (long rx = 0; rx < R->nr_rs; rx++) { //这个for循环主要是为了为每个被分成的小块里的数据赋上训练集中的值
       int new_uid = map_u ? map_u[R->M[rx].uid] : R->M[rx].uid;
@@ -857,5 +859,7 @@ void train(int argc, char **argv)
    delete TrG;
    //Va没有delete
 }
+
+
 
 

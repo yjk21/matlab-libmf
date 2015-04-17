@@ -14,9 +14,11 @@ INCLUDES = -I$(DEV)/arma/include/ \
 		   -I$(HOME)/repos/utils \
 		   -IlibMF/src
 
-CXXFLAGS = $(INCLUDES) -O3 -pthread -std=c++11 -march=native -mtune=native -funroll-loops -Wall -fPIC
+CXXFLAGS = $(INCLUDES) -g -pthread -std=c++11 -march=native -mtune=native -funroll-loops -Wall -fPIC
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC)) 
+
+all: mex
 
 mex: mexLibMF.o  $(OBJ)
 	echo $(OBJ)
