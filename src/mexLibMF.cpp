@@ -33,10 +33,18 @@ void getTripletPrs(const int offset, const mxArray *prhs[], int *&IPr, int  *&JP
    n = nI;
 }
 
+void initOutputPr(const int outIdx, mxArray *plhs[], int dim1, int dim2, float  *&outPr)
+{
+   plhs[outIdx] = mxCreateNumericMatrix(dim1, dim2, mxSINGLE_CLASS, mxREAL);
+   outPr = (float *)::mxGetData(plhs[outIdx]);
+   std::fill(outPr, outPr + dim1 * dim2, 0.0);
+}
+
+
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
    //The interface should be mexLibMF(Itr,Jtr,Vtr,Ite,Jte,Vte,  D,lambda u, lambad v, gamma, maxIt, M, N)
-   if (nrhs < 13)
+   if (nrhs < 16)
       ::mexErrMsgTxt("Not enough input parameters. Usage\nmexLibMF(Itr,Jtr,Vtr,Ite,Jte,Vte,  D,lambda u, lambad v, gamma, maxIt)\n");
 
 
@@ -61,6 +69,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    int maxIt = int(::mxGetScalar(prhs[10]));
    int M = int(::mxGetScalar(prhs[11]));
    int N = int(::mxGetScalar(prhs[12]));
+   int useub = int(::mxGetScalar(prhs[13]));
+   int useib = int(::mxGetScalar(prhs[14]));
+   int useavg = int(::mxGetScalar(prhs[15]));
 
    if (M - 1 > arma::max(Itr) || M - 1 > arma::max(Ite) || N - 1 > arma::max(Jte) || N - 1 > arma::max(Jte)) {
       ::mexErrMsgTxt("User or item index out of bounds!\n");
@@ -94,9 +105,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    model->gamma = gamma; //learning rate
    model->avg = 0.0;
    model->en_rand_shuffle = false;
-   model->en_avg = false;
-   model->en_ub = true;
-   model->en_ib = true;
+   model->en_avg = useavg > 0;
+   model->en_ub = useub > 0;
+   model->en_ib = useib > 0;
    model->map_uf = NULL;
    model->map_if = NULL;
    model->map_ub = NULL;
@@ -141,54 +152,45 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    TrG = new GridMatrix(Tr, model->map_uf, model->map_if, model->nr_gubs, model->nr_gibs, model->nr_thrs);
 
-   delete Tr;
+   delete Tr; //discard temporary triplets
 
 
    gsgd(TrG, model, monitor);
 
-   plhs[0] = mxCreateNumericMatrix(D, M, mxSINGLE_CLASS, mxREAL);
-   plhs[1] = mxCreateNumericMatrix(D, N, mxSINGLE_CLASS, mxREAL);
-   plhs[2] = mxCreateNumericMatrix(1, M, mxSINGLE_CLASS, mxREAL);
-   plhs[3] = mxCreateNumericMatrix(1, N, mxSINGLE_CLASS, mxREAL);
-   plhs[4] = mxCreateNumericMatrix(1, 1, mxSINGLE_CLASS, mxREAL);
 
-   float *qPr = (float *) mxGetData(plhs[0]);
-   float *pPr = (float *) mxGetData(plhs[1]);
-   float *ibPr = (float *) mxGetData(plhs[2]);
-   float *ubPr = (float *) mxGetData(plhs[3]);
-   float *avgPr = (float *) mxGetData(plhs[4]);
+   float *qPr , *pPr , *ibPr , *ubPr , *avgPr ;
 
-   *avgPr = 0;
+   initOutputPr(0, plhs, D, M,  qPr);
+   initOutputPr(1, plhs, D, N,  pPr);
+   initOutputPr(2, plhs, 1, M,  ibPr);
+   initOutputPr(3, plhs, 1, N,  ubPr);
+   initOutputPr(4, plhs, 1, 1,  avgPr);
 
-   arma::Mat<float> Qout(qPr, D,M, false, true);
-   arma::Mat<float> Pout(pPr, D,N, false, true);
+   arma::Mat<float> Qout(qPr, D, M, false, true);
+   arma::Mat<float> Pout(pPr, D, N, false, true);
 
+   //Internal representation is padded to multiple of 4 for SSE
    arma::Mat<float> Qm(model->Q, model->dim_off, M, false, true);
    arma::Mat<float> Pm(model->P, model->dim_off, N, false, true);
 
-  Qout = Qm.rows(0, D-1); 
-  Pout = Pm.rows(0, D-1);
+   //Copy factors
+   Qout = Qm.rows(0, D - 1);
+   Pout = Pm.rows(0, D - 1);
 
-
-
+   //Copy bias terms
    if (model->en_ib) {
-       std::copy(model->IB, model->IB + M, ibPr);
+      std::copy(model->IB, model->IB + M, ibPr);
    }
    if (model->en_ub) {
-       std::copy(model->UB, model->UB + N, ubPr);
+      std::copy(model->UB, model->UB + N, ubPr);
    }
    if (model->en_avg) {
-       *avgPr = model->avg;
+      *avgPr = model->avg;
    }
 
-
-
-
-   //TODO output model
+   //Cleanup
    delete model;
    delete monitor;
    delete TrG;
 }
-
-
 
