@@ -73,7 +73,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    int useib = int(::mxGetScalar(prhs[14]));
    int useavg = int(::mxGetScalar(prhs[15]));
 
-   if (M - 1 > arma::max(Itr) || M - 1 > arma::max(Ite) || N - 1 > arma::max(Jte) || N - 1 > arma::max(Jte)) {
+   if (M - 1 > arma::max(Itr) || M - 1 > arma::max(Ite) || N - 1 > arma::max(Jtr) || N - 1 > arma::max(Jte)) {
       ::mexErrMsgTxt("User or item index out of bounds!\n");
    }
 
