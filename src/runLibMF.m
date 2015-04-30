@@ -7,7 +7,7 @@ function [pred, model] = runLibMF(Ytrain, Ytest, params, options)
     [Ite, Jte, Vte] = prepData(Ytest, options);
 
     % RUN LIBMF
-    [V, U, bi, bu, avg] = mexLibMF(Itr,Jtr,Vtr,Ite,Jte,Vte, params.D,params.lp, params.lq, options.eta, options.maxIt, M, N, options.ub, options.ib, options.avg);
+    [V, U, bi, bu, avg] = myTrain(Itr,Jtr,Vtr,Ite,Jte,Vte, params.D,params.lp, params.lq, options.eta, options.maxIt, M, N, options.ub, options.ib, options.avg, options.nThreads);
 
     % PREDICT
     Rhat = V' * U;
