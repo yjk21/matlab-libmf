@@ -34,6 +34,7 @@ import ycm_core
 # These are the compilation flags that will be used in case there's no
 # compilation database set (by default, one is not set).
 # CHANGE THIS LIST OF FLAGS. YES, THIS IS THE DROID YOU HAVE BEEN LOOKING FOR.
+hdir = os.path.expanduser('~')
 flags = [
 '-Wall',
 '-Wextra',
@@ -73,7 +74,7 @@ flags = [
 '-I',
 '.',
 '-I',
-'/home/junko/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/ClangCompleter/',
+hdir + '/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/ClangCompleter/',
 '-isystem',
 './tests/gmock/gtest',
 '-isystem',
@@ -87,13 +88,13 @@ flags = [
 '-isystem',
 '/usr/local/include',
 '-isystem',
-'/home/junko/dev/arma/include',
+hdir + '/dev/arma/include',
 '-isystem',
-'/home/junko/dev/matlab/extern/include',
+hdir + '/dev/matlab/extern/include',
 '-isystem',
-'/home/junko/dev/unittest-cpp/',
+hdir + '/dev/unittest-cpp/',
 '-isystem',
-'/home/junko/repos/matlab-libmf/src/libMF/src',
+hdir + '/repos/matlab-libmf/src/libMF/src',
 ]
 
 
